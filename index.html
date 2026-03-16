@@ -4,146 +4,350 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="math~term – Mathe-Formeln als Unicode tippen und in GoodNotes einfügen">
 <title>math~term</title>
-<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
 <style>
-* { box-sizing: border-box; margin: 0; padding: 0; }
+/* ── Reset & Tokens ── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
 :root {
-–bg: #0a0c0a;
-–green: #39ff6e;
-–green-dim: #1a7a35;
-–green-faint: #0d3a1a;
-–amber: #ffb340;
-–red: #ff4444;
-–text: #c8f0d0;
-–muted: #3a5c42;
-–cursor: #39ff6e;
+–bg:        #0d1117;
+–surface:   #161b22;
+–surface2:  #21262d;
+–border:    #30363d;
+–border2:   #3d444d;
+–text:      #e6edf3;
+–muted:     #7d8590;
+–green:     #3fb950;
+–green-dim: #238636;
+–blue:      #58a6ff;
+–orange:    #d29922;
+–red:       #f85149;
+–purple:    #bc8cff;
+–mono:      ‘JetBrains Mono’, monospace;
+–sans:      ‘Outfit’, sans-serif;
+–radius:    8px;
+–radius-lg: 12px;
 }
 
-html, body {
-height: 100%;
+html { scroll-behavior: smooth; }
+
+body {
 background: var(–bg);
-color: var(–green);
-font-family: ‘JetBrains Mono’, monospace;
-font-size: 14px;
-line-height: 1.5;
-overflow: hidden;
-}
-
-/* scanline overlay */
-body::after {
-content: ‘’;
-position: fixed;
-inset: 0;
-background: repeating-linear-gradient(
-0deg,
-transparent,
-transparent 2px,
-rgba(0,0,0,0.08) 2px,
-rgba(0,0,0,0.08) 4px
-);
-pointer-events: none;
-z-index: 999;
-}
-
-#term {
+color: var(–text);
+font-family: var(–sans);
+font-size: 15px;
+line-height: 1.6;
+min-height: 100vh;
 display: flex;
 flex-direction: column;
-height: 100vh;
-padding: 0;
 }
 
-/* Header bar */
-#header {
-background: var(–green-faint);
-border-bottom: 1px solid var(–green-dim);
-padding: 6px 16px;
+/* ── Nav ── */
+nav {
+position: sticky;
+top: 0;
+z-index: 200;
+background: rgba(13,17,23,0.85);
+backdrop-filter: blur(12px);
+border-bottom: 1px solid var(–border);
+padding: 0 24px;
+height: 56px;
 display: flex;
 align-items: center;
 justify-content: space-between;
+gap: 16px;
+}
+
+.nav-brand {
+display: flex;
+align-items: center;
+gap: 10px;
+text-decoration: none;
+}
+
+.nav-logo {
+width: 28px;
+height: 28px;
+background: linear-gradient(135deg, var(–green), var(–blue));
+border-radius: 6px;
+display: flex;
+align-items: center;
+justify-content: center;
+font-family: var(–mono);
+font-weight: 700;
+font-size: 13px;
+color: #0d1117;
 flex-shrink: 0;
 }
 
-#header .title {
-color: var(–green);
+.nav-name {
+font-family: var(–mono);
 font-weight: 700;
-font-size: 13px;
-letter-spacing: 0.15em;
+font-size: 15px;
+color: var(–text);
 }
 
-#header .meta {
+.nav-name span { color: var(–green); }
+
+.nav-links {
+display: flex;
+align-items: center;
+gap: 4px;
+}
+
+.nav-link {
+background: none;
+border: none;
 color: var(–muted);
-font-size: 11px;
+font-family: var(–sans);
+font-size: 13px;
+padding: 5px 10px;
+border-radius: var(–radius);
+cursor: pointer;
+transition: color .15s, background .15s;
+text-decoration: none;
+display: flex;
+align-items: center;
+gap: 5px;
 }
 
-/* Output scroll area */
-#output {
+.nav-link:hover { color: var(–text); background: var(–surface2); }
+.nav-link.active { color: var(–text); }
+
+.badge {
+background: var(–green-dim);
+color: var(–green);
+font-size: 10px;
+font-family: var(–mono);
+padding: 1px 6px;
+border-radius: 20px;
+font-weight: 700;
+}
+
+/* ── Hero ── */
+.hero {
+padding: 64px 24px 48px;
+text-align: center;
+max-width: 700px;
+margin: 0 auto;
+width: 100%;
+}
+
+.hero-tag {
+display: inline-flex;
+align-items: center;
+gap: 6px;
+background: var(–surface2);
+border: 1px solid var(–border);
+border-radius: 20px;
+padding: 4px 14px;
+font-size: 12px;
+color: var(–muted);
+font-family: var(–mono);
+margin-bottom: 20px;
+}
+
+.hero-tag .dot {
+width: 6px; height: 6px;
+background: var(–green);
+border-radius: 50%;
+animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+0%, 100% { opacity: 1; }
+50% { opacity: 0.3; }
+}
+
+.hero h1 {
+font-family: var(–mono);
+font-size: clamp(2rem, 6vw, 3.2rem);
+font-weight: 700;
+color: var(–text);
+margin-bottom: 16px;
+line-height: 1.2;
+}
+
+.hero h1 .hl { color: var(–green); }
+.hero h1 .hl2 { color: var(–blue); }
+
+.hero p {
+color: var(–muted);
+font-size: 16px;
+max-width: 480px;
+margin: 0 auto 32px;
+}
+
+.hero-examples {
+display: flex;
+flex-wrap: wrap;
+justify-content: center;
+gap: 8px;
+margin-bottom: 40px;
+}
+
+.example-chip {
+background: var(–surface);
+border: 1px solid var(–border);
+border-radius: 6px;
+padding: 4px 12px;
+font-family: var(–mono);
+font-size: 13px;
+color: var(–muted);
+cursor: pointer;
+transition: all .15s;
+}
+
+.example-chip .arrow { color: var(–border2); margin: 0 4px; }
+.example-chip .result { color: var(–green); }
+
+.example-chip:hover {
+border-color: var(–green-dim);
+background: var(–surface2);
+color: var(–text);
+}
+
+/* ── Main layout ── */
+main {
 flex: 1;
-overflow-y: auto;
-padding: 12px 16px 4px;
+max-width: 900px;
+width: 100%;
+margin: 0 auto;
+padding: 0 24px 64px;
 display: flex;
 flex-direction: column;
-gap: 2px;
+gap: 20px;
 }
 
-#output::-webkit-scrollbar { width: 4px; }
-#output::-webkit-scrollbar-track { background: transparent; }
-#output::-webkit-scrollbar-thumb { background: var(–green-dim); border-radius: 2px; }
+/* ── Terminal ── */
+.term-card {
+background: var(–surface);
+border: 1px solid var(–border);
+border-radius: var(–radius-lg);
+overflow: hidden;
+}
 
-.line {
+.term-bar {
+background: var(–surface2);
+border-bottom: 1px solid var(–border);
+padding: 10px 16px;
 display: flex;
-gap: 0;
-white-space: pre-wrap;
-word-break: break-all;
-animation: appear 0.05s ease;
+align-items: center;
+gap: 12px;
 }
 
-@keyframes appear { from { opacity: 0; } to { opacity: 1; } }
+.traffic-lights {
+display: flex;
+gap: 6px;
+}
 
-.line.input-echo .prompt { color: var(–green-dim); }
-.line.input-echo .content { color: var(–text); }
+.tl {
+width: 12px; height: 12px;
+border-radius: 50%;
+}
 
-.line.result .prompt { color: var(–amber); user-select: none; }
-.line.result .content {
+.tl-r { background: #ff5f57; }
+.tl-y { background: #ffbd2e; }
+.tl-g { background: #28c941; }
+
+.term-title {
+flex: 1;
+text-align: center;
+font-family: var(–mono);
+font-size: 12px;
+color: var(–muted);
+}
+
+.term-actions {
+display: flex;
+gap: 6px;
+}
+
+.term-btn {
+background: var(–surface);
+border: 1px solid var(–border);
+border-radius: 5px;
+color: var(–muted);
+font-family: var(–mono);
+font-size: 11px;
+padding: 3px 9px;
+cursor: pointer;
+transition: all .12s;
+}
+
+.term-btn:hover { border-color: var(–border2); color: var(–text); }
+.term-btn.primary { border-color: var(–green-dim); color: var(–green); }
+.term-btn.primary:hover { background: var(–green-dim); color: #fff; }
+
+.term-output {
+font-family: var(–mono);
+font-size: 13.5px;
+line-height: 1.7;
+padding: 16px;
+min-height: 220px;
+max-height: 380px;
+overflow-y: auto;
+display: flex;
+flex-direction: column;
+gap: 1px;
+}
+
+.term-output::-webkit-scrollbar { width: 4px; }
+.term-output::-webkit-scrollbar-track { background: transparent; }
+.term-output::-webkit-scrollbar-thumb { background: var(–border2); border-radius: 2px; }
+
+.tl-line { display: flex; gap: 0; align-items: baseline; animation: tl-in .08s ease; }
+@keyframes tl-in { from { opacity: 0; transform: translateY(2px); } to { opacity: 1; transform: none; } }
+
+.tl-prompt { min-width: 18px; margin-right: 10px; user-select: none; flex-shrink: 0; }
+
+.tl-type-input  .tl-prompt { color: var(–muted); }
+.tl-type-input  .tl-content { color: var(–text); }
+.tl-type-result .tl-prompt { color: var(–orange); }
+.tl-type-result .tl-content {
 color: var(–green);
 font-size: 16px;
-letter-spacing: 0.05em;
 cursor: pointer;
-transition: color 0.1s;
+border-radius: 4px;
+padding: 1px 4px;
+margin-left: -4px;
+transition: background .12s, color .12s;
 }
-.line.result .content:hover { color: #fff; }
-.line.result .content.flashed { color: var(–amber); }
+.tl-type-result .tl-content:hover { background: rgba(63,185,80,.12); color: #fff; }
+.tl-type-result .tl-content.flash { background: rgba(210,153,34,.15); color: var(–orange); }
+.tl-type-info   .tl-prompt { color: var(–border2); }
+.tl-type-info   .tl-content { color: var(–muted); }
+.tl-type-system .tl-prompt { color: var(–orange); }
+.tl-type-system .tl-content { color: var(–orange); }
+.tl-type-error  .tl-prompt { color: var(–red); }
+.tl-type-error  .tl-content { color: var(–red); }
+.tl-spacer { height: 8px; }
 
-.line.info .content { color: var(–muted); font-size: 12px; }
-.line.error .content { color: var(–red); }
-.line.system .content { color: var(–amber); }
-.line.spacer { height: 6px; }
-
-.prompt { min-width: 20px; user-select: none; margin-right: 8px; }
-.content { flex: 1; }
-
-/* copy hint */
-.copy-hint {
-font-size: 11px;
-color: var(–green-dim);
+.copy-tag {
+font-size: 10px;
+color: var(–border2);
 margin-left: 8px;
 user-select: none;
-transition: color 0.1s;
+transition: color .12s;
+align-self: center;
 }
+.tl-type-result:hover .copy-tag { color: var(–muted); }
 
-/* Input row */
-#input-row {
-border-top: 1px solid var(–green-faint);
-padding: 8px 16px;
+.term-input-row {
+border-top: 1px solid var(–border);
+padding: 10px 16px;
 display: flex;
 align-items: center;
 gap: 8px;
-flex-shrink: 0;
-background: rgba(0,0,0,0.3);
+background: rgba(0,0,0,.2);
 }
 
-#input-row .ps1 {
+.term-ps1 {
+font-family: var(–mono);
+font-size: 13px;
 color: var(–green-dim);
 user-select: none;
 white-space: nowrap;
@@ -155,302 +359,403 @@ background: transparent;
 border: none;
 outline: none;
 color: var(–text);
-font-family: ‘JetBrains Mono’, monospace;
+font-family: var(–mono);
 font-size: 14px;
-caret-color: var(–cursor);
+caret-color: var(–green);
 }
 
-/* help table */
-.help-table {
+#cmd::placeholder { color: var(–border2); }
+
+/* ── Cheatsheet ── */
+.cheat-card {
+background: var(–surface);
+border: 1px solid var(–border);
+border-radius: var(–radius-lg);
+overflow: hidden;
+}
+
+.cheat-header {
+background: var(–surface2);
+border-bottom: 1px solid var(–border);
+padding: 12px 16px;
+display: flex;
+align-items: center;
+justify-content: space-between;
+}
+
+.cheat-header h2 {
+font-family: var(–mono);
+font-size: 13px;
+color: var(–text);
+font-weight: 600;
+}
+
+.cheat-grid {
 display: grid;
-grid-template-columns: 140px 1fr;
+grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
 gap: 0;
 }
 
-.help-table .k { color: var(–amber); }
-.help-table .v { color: var(–muted); }
-
-/* cheatsheet panel */
-#cheat {
-position: fixed;
-right: 0; top: 0; bottom: 0;
-width: 260px;
-background: rgba(10,12,10,0.97);
-border-left: 1px solid var(–green-faint);
-overflow-y: auto;
-padding: 10px 12px;
-display: none;
-z-index: 100;
-font-size: 12px;
+.cheat-section {
+padding: 14px 16px;
+border-right: 1px solid var(–border);
+border-bottom: 1px solid var(–border);
 }
 
-#cheat.open { display: block; }
-#cheat h2 { color: var(–amber); font-size: 11px; letter-spacing: 0.15em; margin-bottom: 8px; text-transform: uppercase; }
-#cheat .cs-row { display: flex; justify-content: space-between; padding: 2px 0; border-bottom: 1px solid var(–green-faint); }
-#cheat .cs-row:last-child { border: none; }
-#cheat .cs-key { color: var(–amber); }
-#cheat .cs-val { color: var(–green); font-size: 14px; }
-#cheat .cs-section { color: var(–muted); font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; margin: 8px 0 4px; }
+.cheat-section:last-child { border-right: none; }
+
+.cheat-section h3 {
+font-size: 10px;
+font-weight: 600;
+letter-spacing: .1em;
+text-transform: uppercase;
+color: var(–muted);
+margin-bottom: 8px;
+}
+
+.cheat-rows { display: flex; flex-direction: column; gap: 3px; }
+
+.cheat-row {
+display: flex;
+align-items: center;
+justify-content: space-between;
+padding: 2px 0;
+}
+
+.cheat-key {
+font-family: var(–mono);
+font-size: 12px;
+color: var(–blue);
+cursor: pointer;
+padding: 1px 6px;
+border-radius: 4px;
+border: 1px solid transparent;
+transition: all .12s;
+}
+
+.cheat-key:hover {
+background: rgba(88,166,255,.1);
+border-color: rgba(88,166,255,.3);
+color: #fff;
+}
+
+.cheat-val {
+font-family: var(–mono);
+font-size: 15px;
+color: var(–green);
+}
+
+.cheat-desc {
+font-size: 11px;
+color: var(–border2);
+text-align: right;
+}
+
+/* ── Footer ── */
+footer {
+border-top: 1px solid var(–border);
+padding: 20px 24px;
+text-align: center;
+color: var(–muted);
+font-size: 12px;
+font-family: var(–mono);
+}
+
+footer a { color: var(–blue); text-decoration: none; }
+footer a:hover { text-decoration: underline; }
+
+/* ── Responsive ── */
+@media (max-width: 600px) {
+nav { padding: 0 16px; }
+.hero { padding: 40px 16px 32px; }
+main { padding: 0 16px 48px; }
+.hero h1 { font-size: 1.8rem; }
+.nav-links { display: none; }
+.term-actions .term-btn:not(.primary) { display: none; }
+.cheat-grid { grid-template-columns: 1fr 1fr; }
+}
 </style>
 
 </head>
 <body>
 
-<div id="term">
-  <div id="header">
-    <span class="title">math~term v1.0</span>
-    <span class="meta">unicode converter · type <span style="color:var(--amber)">help</span> · <span style="color:var(--amber); cursor:pointer" onclick="toggleCheat()">?cheat</span></span>
+<!-- Nav -->
+
+<nav>
+  <a class="nav-brand" href="#">
+    <div class="nav-logo">∑</div>
+    <span class="nav-name">math<span>~term</span></span>
+  </a>
+  <div class="nav-links">
+    <span class="badge">v1.0</span>
+    <button class="nav-link" onclick="document.getElementById('cmd').focus()">Terminal</button>
+    <button class="nav-link" onclick="document.querySelector('.cheat-card').scrollIntoView({behavior:'smooth'})">Cheatsheet</button>
+    <a class="nav-link" href="https://github.com" target="_blank">
+      <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
+      GitHub
+    </a>
   </div>
+</nav>
 
-  <div id="output"></div>
+<!-- Hero -->
 
-  <div id="input-row">
-    <span class="ps1">math&gt;&nbsp;</span>
-    <input id="cmd" type="text" autocomplete="off" autocorrect="off" spellcheck="false" autofocus placeholder="z.B.  x in R, x != 0">
+<div class="hero">
+  <div class="hero-tag"><span class="dot"></span>Unicode · kein LaTeX nötig</div>
+  <h1>Mathe tippen.<br><span class="hl">Unicode</span> kopieren.<br>In <span class="hl2">GoodNotes</span> einfügen.</h1>
+  <p>Schreib mathematische Ausdrücke mit einfacher Syntax — das Tool wandelt sie direkt in Unicode-Zeichen um.</p>
+
+  <div class="hero-examples">
+    <span class="example-chip" onclick="fillExample('x in RR, x != 0')">
+      <code>x in RR, x != 0</code>
+      <span class="arrow">→</span>
+      <span class="result">x ∈ ℝ, x ≠ 0</span>
+    </span>
+    <span class="example-chip" onclick="fillExample('f: RR -> RR, f(x) = x^2')">
+      <code>f: RR -> RR, f(x) = x^2</code>
+      <span class="arrow">→</span>
+      <span class="result">f: ℝ → ℝ, f(x) = x²</span>
+    </span>
+    <span class="example-chip" onclick="fillExample('a_1 <= a_2, a_n in ZZ')">
+      <code>a_1 &lt;= a_2</code>
+      <span class="arrow">→</span>
+      <span class="result">a₁ ≤ a₂</span>
+    </span>
+    <span class="example-chip" onclick="fillExample('\\alpha + \\beta = \\pi')">
+      <code>\alpha + \beta = \pi</code>
+      <span class="arrow">→</span>
+      <span class="result">α + β = π</span>
+    </span>
   </div>
 </div>
 
-<div id="cheat"></div>
+<!-- Main -->
+
+<main>
+
+  <!-- Terminal -->
+
+  <div class="term-card">
+    <div class="term-bar">
+      <div class="traffic-lights">
+        <div class="tl tl-r"></div>
+        <div class="tl tl-y"></div>
+        <div class="tl tl-g"></div>
+      </div>
+      <span class="term-title">math~term — unicode converter</span>
+      <div class="term-actions">
+        <button class="term-btn" onclick="clearTerm()">clear</button>
+        <button class="term-btn" onclick="printHelp()">help</button>
+        <button class="term-btn primary" id="copy-last-btn" onclick="copyLast()">⎘ kopieren</button>
+      </div>
+    </div>
+
+```
+<div class="term-output" id="output"></div>
+
+<div class="term-input-row">
+  <span class="term-ps1">math&nbsp;❯&nbsp;</span>
+  <input id="cmd" type="text" autocomplete="off" autocorrect="off" spellcheck="false"
+         placeholder="x in RR, x != 0  →  Enter">
+</div>
+```
+
+  </div>
+
+  <!-- Cheatsheet -->
+
+  <div class="cheat-card">
+    <div class="cheat-header">
+      <h2>⌨ Kurzreferenz — klick auf einen Shortcut um ihn einzufügen</h2>
+    </div>
+    <div class="cheat-grid" id="cheat-grid"></div>
+  </div>
+
+</main>
+
+<footer>
+  math~term &nbsp;·&nbsp; single-file · no dependencies · <a href="#">GitHub Pages</a>
+</footer>
 
 <script>
-// ─── Unicode map ─────────────────────────────────────────────────────────────
-const REPLACEMENTS = [
-  // Must be ordered longest-first to avoid partial matches
-
-  // Relations
-  { from: /!=|\\neq/g,          to: '≠' },
-  { from: /<=|\\leq/g,          to: '≤' },
-  { from: />=|\\geq/g,          to: '≥' },
-  { from: /~=|\\approx/g,       to: '≈' },
-  { from: /===|\\equiv/g,       to: '≡' },
-  { from: /<=/g,                to: '≤' },
-  { from: />=/g,                to: '≥' },
-
-  // Sets
-  { from: /\\in\b| in /g,       to: ' ∈ ' },
-  { from: /\\notin\b| notin /g, to: ' ∉ ' },
-  { from: /\\subset/g,          to: ' ⊂ ' },
-  { from: /\\subseteq/g,        to: ' ⊆ ' },
-  { from: /\\cup/g,             to: ' ∪ ' },
-  { from: /\\cap/g,             to: ' ∩ ' },
-  { from: /\\emptyset/g,        to: '∅' },
-
-  // Number sets
-  { from: /\\R\b|RR\b/g,        to: 'ℝ' },
-  { from: /\\N\b|NN\b/g,        to: 'ℕ' },
-  { from: /\\Z\b|ZZ\b/g,        to: 'ℤ' },
-  { from: /\\Q\b|QQ\b/g,        to: 'ℚ' },
-  { from: /\\C\b|CC\b/g,        to: 'ℂ' },
-
-  // Logic
-  { from: /=>|\\Rightarrow/g,   to: ' ⇒ ' },
-  { from: /<=>|\\Leftrightarrow/g, to: ' ⟺ ' },
-  { from: /->|\\to\b/g,         to: ' → ' },
-  { from: /<-/g,                to: ' ← ' },
-  { from: /\\forall/g,          to: '∀' },
-  { from: /\\exists/g,          to: '∃' },
-  { from: /\\neg|\\not\b/g,     to: '¬' },
-  { from: /\\land\b| and /g,    to: ' ∧ ' },
-  { from: /\\lor\b| or /g,      to: ' ∨ ' },
-
-  // Operators
-  { from: /\\pm/g,              to: '±' },
-  { from: /\\times/g,           to: '×' },
-  { from: /\\div/g,             to: '÷' },
-  { from: /\\cdot/g,            to: '·' },
-  { from: /\\infty|inf\b/g,     to: '∞' },
-  { from: /\\sqrt/g,            to: '√' },
-  { from: /\\partial/g,         to: '∂' },
-  { from: /\\nabla/g,           to: '∇' },
-  { from: /\\sum/g,             to: '∑' },
-  { from: /\\prod/g,            to: '∏' },
-  { from: /\\int/g,             to: '∫' },
-
-  // Superscripts (^0-9, ^+, ^-, ^n, ^x)
-  { from: /\^0/g, to: '⁰' },
-  { from: /\^1/g, to: '¹' },
-  { from: /\^2/g, to: '²' },
-  { from: /\^3/g, to: '³' },
-  { from: /\^4/g, to: '⁴' },
-  { from: /\^5/g, to: '⁵' },
-  { from: /\^6/g, to: '⁶' },
-  { from: /\^7/g, to: '⁷' },
-  { from: /\^8/g, to: '⁸' },
-  { from: /\^9/g, to: '⁹' },
-  { from: /\^\+/g, to: '⁺' },
-  { from: /\^-1/g, to: '⁻¹' },
-  { from: /\^-/g, to: '⁻' },
-  { from: /\^n/g, to: 'ⁿ' },
-  { from: /\^i/g, to: 'ⁱ' },
-  { from: /\^a/g, to: 'ᵃ' },
-  { from: /\^b/g, to: 'ᵇ' },
-  { from: /\^x/g, to: 'ˣ' },
-  { from: /\^k/g, to: 'ᵏ' },
-  { from: /\^m/g, to: 'ᵐ' },
-  { from: /\^p/g, to: 'ᵖ' },
-  { from: /\^r/g, to: 'ʳ' },
-  { from: /\^s/g, to: 'ˢ' },
-  { from: /\^t/g, to: 'ᵗ' },
-
-  // Subscripts (_0-9, _n, _i etc.)
-  { from: /_0/g, to: '₀' },
-  { from: /_1/g, to: '₁' },
-  { from: /_2/g, to: '₂' },
-  { from: /_3/g, to: '₃' },
-  { from: /_4/g, to: '₄' },
-  { from: /_5/g, to: '₅' },
-  { from: /_6/g, to: '₆' },
-  { from: /_7/g, to: '₇' },
-  { from: /_8/g, to: '₈' },
-  { from: /_9/g, to: '₉' },
-  { from: /_n/g, to: 'ₙ' },
-  { from: /_i/g, to: 'ᵢ' },
-  { from: /_j/g, to: 'ⱼ' },
-  { from: /_k/g, to: 'ₖ' },
-  { from: /_m/g, to: 'ₘ' },
-  { from: /_x/g, to: 'ₓ' },
-  { from: /_a/g, to: 'ₐ' },
-  { from: /_e/g, to: 'ₑ' },
-  { from: /_o/g, to: 'ₒ' },
-  { from: /_r/g, to: 'ᵣ' },
-  { from: /_s/g, to: 'ₛ' },
-  { from: /_t/g, to: 'ₜ' },
-  { from: /_u/g, to: 'ᵤ' },
-  { from: /_v/g, to: 'ᵥ' },
-
+// ── Unicode replacements ──────────────────────────────────────────────────────
+const RULES = [
+  { from: /!=|\\neq/g,                to: '≠' },
+  { from: /<=|\\leq/g,               to: '≤' },
+  { from: />=|\\geq/g,               to: '≥' },
+  { from: /~=|\\approx/g,            to: '≈' },
+  { from: /===|\\equiv/g,            to: '≡' },
+  { from: /\\in\b| in /g,            to: ' ∈ ' },
+  { from: /\\notin\b| notin /g,      to: ' ∉ ' },
+  { from: /\\subset(?!eq)/g,         to: ' ⊂ ' },
+  { from: /\\subseteq/g,             to: ' ⊆ ' },
+  { from: /\\cup\b/g,                to: ' ∪ ' },
+  { from: /\\cap\b/g,                to: ' ∩ ' },
+  { from: /\\emptyset/g,             to: '∅' },
+  { from: /\\R\b|RR\b/g,             to: 'ℝ' },
+  { from: /\\N\b|NN\b/g,             to: 'ℕ' },
+  { from: /\\Z\b|ZZ\b/g,             to: 'ℤ' },
+  { from: /\\Q\b|QQ\b/g,             to: 'ℚ' },
+  { from: /\\C\b|CC\b/g,             to: 'ℂ' },
+  { from: /<=>|\\Leftrightarrow/g,   to: ' ⟺ ' },
+  { from: /=>|\\Rightarrow/g,        to: ' ⇒ ' },
+  { from: /->|\\to\b/g,              to: ' → ' },
+  { from: /<-/g,                     to: ' ← ' },
+  { from: /\\forall/g,               to: '∀' },
+  { from: /\\exists/g,               to: '∃' },
+  { from: /\\neg|\\lnot/g,           to: '¬' },
+  { from: /\\land\b| and /g,         to: ' ∧ ' },
+  { from: /\\lor\b| or /g,           to: ' ∨ ' },
+  { from: /\\pm/g,                   to: '±' },
+  { from: /\\times/g,                to: '×' },
+  { from: /\\div\b/g,                to: '÷' },
+  { from: /\\cdot/g,                 to: '·' },
+  { from: /\\infty|inf\b/g,          to: '∞' },
+  { from: /\\sqrt/g,                 to: '√' },
+  { from: /\\partial/g,              to: '∂' },
+  { from: /\\nabla/g,                to: '∇' },
+  { from: /\\sum/g,                  to: '∑' },
+  { from: /\\prod/g,                 to: '∏' },
+  { from: /\\int/g,                  to: '∫' },
+  // Superscripts
+  { from: /\^0/g, to: '⁰' }, { from: /\^1/g, to: '¹' }, { from: /\^2/g, to: '²' },
+  { from: /\^3/g, to: '³' }, { from: /\^4/g, to: '⁴' }, { from: /\^5/g, to: '⁵' },
+  { from: /\^6/g, to: '⁶' }, { from: /\^7/g, to: '⁷' }, { from: /\^8/g, to: '⁸' },
+  { from: /\^9/g, to: '⁹' }, { from: /\^\+/g, to: '⁺' }, { from: /\^-1/g, to: '⁻¹' },
+  { from: /\^-/g, to: '⁻' }, { from: /\^n/g, to: 'ⁿ' }, { from: /\^i/g, to: 'ⁱ' },
+  { from: /\^a/g, to: 'ᵃ' }, { from: /\^b/g, to: 'ᵇ' }, { from: /\^x/g, to: 'ˣ' },
+  { from: /\^k/g, to: 'ᵏ' }, { from: /\^m/g, to: 'ᵐ' }, { from: /\^p/g, to: 'ᵖ' },
+  { from: /\^r/g, to: 'ʳ' }, { from: /\^s/g, to: 'ˢ' }, { from: /\^t/g, to: 'ᵗ' },
+  // Subscripts
+  { from: /_0/g, to: '₀' }, { from: /_1/g, to: '₁' }, { from: /_2/g, to: '₂' },
+  { from: /_3/g, to: '₃' }, { from: /_4/g, to: '₄' }, { from: /_5/g, to: '₅' },
+  { from: /_6/g, to: '₆' }, { from: /_7/g, to: '₇' }, { from: /_8/g, to: '₈' },
+  { from: /_9/g, to: '₉' }, { from: /_n/g, to: 'ₙ' }, { from: /_i/g, to: 'ᵢ' },
+  { from: /_j/g, to: 'ⱼ' }, { from: /_k/g, to: 'ₖ' }, { from: /_m/g, to: 'ₘ' },
+  { from: /_x/g, to: 'ₓ' }, { from: /_a/g, to: 'ₐ' }, { from: /_e/g, to: 'ₑ' },
+  { from: /_o/g, to: 'ₒ' }, { from: /_r/g, to: 'ᵣ' }, { from: /_s/g, to: 'ₛ' },
+  { from: /_t/g, to: 'ₜ' }, { from: /_u/g, to: 'ᵤ' }, { from: /_v/g, to: 'ᵥ' },
   // Greek
-  { from: /\\alpha/g,   to: 'α' },
-  { from: /\\beta/g,    to: 'β' },
-  { from: /\\gamma/g,   to: 'γ' },
-  { from: /\\Gamma/g,   to: 'Γ' },
-  { from: /\\delta/g,   to: 'δ' },
-  { from: /\\Delta/g,   to: 'Δ' },
-  { from: /\\epsilon/g, to: 'ε' },
-  { from: /\\zeta/g,    to: 'ζ' },
-  { from: /\\eta/g,     to: 'η' },
-  { from: /\\theta/g,   to: 'θ' },
-  { from: /\\Theta/g,   to: 'Θ' },
-  { from: /\\lambda/g,  to: 'λ' },
-  { from: /\\Lambda/g,  to: 'Λ' },
-  { from: /\\mu/g,      to: 'μ' },
-  { from: /\\nu/g,      to: 'ν' },
-  { from: /\\xi/g,      to: 'ξ' },
-  { from: /\\pi/g,      to: 'π' },
-  { from: /\\Pi/g,      to: 'Π' },
-  { from: /\\rho/g,     to: 'ρ' },
-  { from: /\\sigma/g,   to: 'σ' },
-  { from: /\\Sigma/g,   to: 'Σ' },
-  { from: /\\tau/g,     to: 'τ' },
-  { from: /\\phi/g,     to: 'φ' },
-  { from: /\\Phi/g,     to: 'Φ' },
-  { from: /\\chi/g,     to: 'χ' },
-  { from: /\\psi/g,     to: 'ψ' },
-  { from: /\\Psi/g,     to: 'Ψ' },
-  { from: /\\omega/g,   to: 'ω' },
-  { from: /\\Omega/g,   to: 'Ω' },
+  { from: /\\alpha/g,  to: 'α' }, { from: /\\beta/g,   to: 'β' },
+  { from: /\\Gamma/g,  to: 'Γ' }, { from: /\\gamma/g,  to: 'γ' },
+  { from: /\\Delta/g,  to: 'Δ' }, { from: /\\delta/g,  to: 'δ' },
+  { from: /\\epsilon/g,to: 'ε' }, { from: /\\zeta/g,   to: 'ζ' },
+  { from: /\\eta/g,    to: 'η' }, { from: /\\Theta/g,  to: 'Θ' },
+  { from: /\\theta/g,  to: 'θ' }, { from: /\\Lambda/g, to: 'Λ' },
+  { from: /\\lambda/g, to: 'λ' }, { from: /\\mu/g,     to: 'μ' },
+  { from: /\\nu/g,     to: 'ν' }, { from: /\\xi/g,     to: 'ξ' },
+  { from: /\\Pi/g,     to: 'Π' }, { from: /\\pi/g,     to: 'π' },
+  { from: /\\rho/g,    to: 'ρ' }, { from: /\\Sigma/g,  to: 'Σ' },
+  { from: /\\sigma/g,  to: 'σ' }, { from: /\\tau/g,    to: 'τ' },
+  { from: /\\Phi/g,    to: 'Φ' }, { from: /\\phi/g,    to: 'φ' },
+  { from: /\\chi/g,    to: 'χ' }, { from: /\\Psi/g,    to: 'Ψ' },
+  { from: /\\psi/g,    to: 'ψ' }, { from: /\\Omega/g,  to: 'Ω' },
+  { from: /\\omega/g,  to: 'ω' },
 ];
 
-function convert(str) {
-  let s = str;
-  for (const r of REPLACEMENTS) {
-    s = s.replace(r.from, r.to);
-  }
-  return s;
+function convert(s) {
+  for (const r of RULES) s = s.replace(r.from, r.to);
+  return s.replace(/\s{2,}/g, ' ').trim();
 }
 
-// ─── Terminal logic ───────────────────────────────────────────────────────────
-const output = document.getElementById('output');
+// ── Terminal ──────────────────────────────────────────────────────────────────
+const out = document.getElementById('output');
 const cmd = document.getElementById('cmd');
 let history = [];
 let histIdx = -1;
+let lastResult = '';
 
-function print(type, content, extra) {
-  const line = document.createElement('div');
-  line.className = 'line ' + type;
-  const prompt = document.createElement('span');
-  prompt.className = 'prompt';
-  const content_el = document.createElement('span');
-  content_el.className = 'content';
-
-  if (type === 'input-echo') { prompt.textContent = '›'; content_el.textContent = content; }
-  else if (type === 'result') {
-    prompt.textContent = '=';
-    content_el.textContent = content;
-    const hint = document.createElement('span');
-    hint.className = 'copy-hint';
-    hint.textContent = '[klick → kopiert]';
-    content_el.addEventListener('click', () => {
-      navigator.clipboard.writeText(content).then(() => {
-        content_el.classList.add('flashed');
-        hint.textContent = '[✓ kopiert!]';
-        setTimeout(() => { content_el.classList.remove('flashed'); hint.textContent = '[klick → kopiert]'; }, 1200);
-      });
-    });
-    line.appendChild(prompt);
-    line.appendChild(content_el);
-    line.appendChild(hint);
-    output.appendChild(line);
-    output.scrollTop = output.scrollHeight;
+function addLine(type, content) {
+  if (type === 'spacer') {
+    const el = document.createElement('div');
+    el.className = 'tl-spacer';
+    out.appendChild(el);
+    out.scrollTop = out.scrollHeight;
     return;
   }
-  else if (type === 'info') { prompt.textContent = ' '; content_el.textContent = content; }
-  else if (type === 'error') { prompt.textContent = '!'; content_el.textContent = content; }
-  else if (type === 'system') { prompt.textContent = '#'; content_el.textContent = content; }
-  else if (type === 'spacer') { output.appendChild(line); output.scrollTop = output.scrollHeight; return; }
+
+  const line = document.createElement('div');
+  line.className = 'tl-line tl-type-' + type;
+
+  const prompt = document.createElement('span');
+  prompt.className = 'tl-prompt';
+  const prompts = { input:'›', result:'=', info:' ', system:'#', error:'!' };
+  prompt.textContent = prompts[type] || ' ';
+
+  const body = document.createElement('span');
+  body.className = 'tl-content';
+  body.textContent = content;
 
   line.appendChild(prompt);
-  line.appendChild(content_el);
-  output.appendChild(line);
-  output.scrollTop = output.scrollHeight;
-}
+  line.appendChild(body);
 
-function printHelp() {
-  print('system', 'math~term — Befehle');
-  print('spacer');
-  const rows = [
-    ['help', 'diese Hilfe'],
-    ['clear', 'Terminal leeren'],
-    ['?cheat', 'Kurzreferenz ein/ausblenden'],
-    ['[eingabe]', 'Text → Unicode konvertieren'],
-  ];
-  for (const [k, v] of rows) {
-    const line = document.createElement('div');
-    line.className = 'line info';
-    line.innerHTML = `<span class="prompt"> </span><span class="content"><span style="color:var(--amber);display:inline-block;width:100px">${k}</span><span style="color:var(--muted)">${v}</span></span>`;
-    output.appendChild(line);
+  if (type === 'result') {
+    const tag = document.createElement('span');
+    tag.className = 'copy-tag';
+    tag.textContent = 'klick → kopieren';
+    line.appendChild(tag);
+    body.addEventListener('click', () => {
+      navigator.clipboard.writeText(content).then(() => {
+        body.classList.add('flash');
+        tag.textContent = '✓ kopiert!';
+        setTimeout(() => { body.classList.remove('flash'); tag.textContent = 'klick → kopieren'; }, 1400);
+      });
+    });
   }
-  print('spacer');
-  print('info', 'Syntax-Kurzreferenz:');
-  print('info', '  !=  ≠   <=  ≤   >=  ≥   in  ∈   notin  ∉');
-  print('info', '  RR  ℝ   NN  ℕ   ZZ  ℤ   QQ  ℚ   CC  ℂ');
-  print('info', '  ^2  ²   ^n  ⁿ   _1  ₁   _n  ₙ');
-  print('info', '  =>  ⇒   <=> ⟺   ->  →   inf ∞');
-  print('info', '  \\alpha α  \\beta β  \\pi π  \\sqrt √  ...');
-  print('spacer');
-  output.scrollTop = output.scrollHeight;
+
+  out.appendChild(line);
+  out.scrollTop = out.scrollHeight;
 }
 
 function execute(raw) {
-  const trimmed = raw.trim();
-  if (!trimmed) return;
-
-  history.unshift(trimmed);
+  const t = raw.trim();
+  if (!t) return;
+  history.unshift(t);
   histIdx = -1;
 
-  print('input-echo', trimmed);
+  addLine('input', t);
 
-  if (trimmed === 'clear') {
-    output.innerHTML = '';
-    return;
-  }
-  if (trimmed === 'help') {
-    printHelp();
-    return;
-  }
+  if (t === 'clear') { clearTerm(); return; }
+  if (t === 'help')  { printHelp(); return; }
 
-  const result = convert(trimmed);
-  print('result', result);
-  print('spacer');
+  const res = convert(t);
+  lastResult = res;
+  addLine('result', res);
+  addLine('spacer');
+}
+
+function clearTerm() {
+  out.innerHTML = '';
+}
+
+function copyLast() {
+  if (!lastResult) return;
+  navigator.clipboard.writeText(lastResult).then(() => {
+    const btn = document.getElementById('copy-last-btn');
+    btn.textContent = '✓ kopiert!';
+    setTimeout(() => btn.textContent = '⎘ kopieren', 1400);
+  });
+}
+
+function printHelp() {
+  addLine('system', 'Befehle');
+  [
+    ['clear',       'Terminal leeren'],
+    ['help',        'diese Hilfe'],
+    ['[Ausdruck]',  '→ Unicode-Text'],
+  ].forEach(([k,v]) => {
+    const line = document.createElement('div');
+    line.className = 'tl-line tl-type-info';
+    line.innerHTML = `<span class="tl-prompt"> </span><span class="tl-content"><span style="color:var(--blue);display:inline-block;min-width:120px;font-family:var(--mono)">${k}</span><span style="color:var(--muted)">${v}</span></span>`;
+    out.appendChild(line);
+  });
+  addLine('spacer');
+}
+
+function fillExample(text) {
+  cmd.value = text;
+  cmd.focus();
+  execute(text);
+  cmd.value = '';
 }
 
 cmd.addEventListener('keydown', e => {
@@ -459,88 +764,95 @@ cmd.addEventListener('keydown', e => {
     cmd.value = '';
   } else if (e.key === 'ArrowUp') {
     e.preventDefault();
-    if (histIdx < history.length - 1) { histIdx++; cmd.value = history[histIdx]; }
+    if (histIdx < history.length - 1) cmd.value = history[++histIdx];
   } else if (e.key === 'ArrowDown') {
     e.preventDefault();
-    if (histIdx > 0) { histIdx--; cmd.value = history[histIdx]; }
-    else { histIdx = -1; cmd.value = ''; }
+    histIdx > 0 ? cmd.value = history[--histIdx] : (histIdx = -1, cmd.value = '');
   }
 });
 
-// keep focus
-document.addEventListener('click', () => cmd.focus());
+document.addEventListener('click', e => {
+  if (!e.target.closest('.cheat-key') && !e.target.closest('button') && !e.target.closest('a')) cmd.focus();
+});
 
-// ─── Cheatsheet ───────────────────────────────────────────────────────────────
-const CHEAT_SECTIONS = [
+// ── Cheatsheet ────────────────────────────────────────────────────────────────
+const CHEAT = [
   { title: 'Mengen', rows: [
-    ['in / \\in', '∈'], ['notin / \\notin', '∉'], ['\\subset', '⊂'], ['\\cup', '∪'], ['\\cap', '∩'], ['\\emptyset', '∅'],
+    ['in / \\in','∈','Element von'], ['notin','∉','kein Element'], ['\\subset','⊂','Teilmenge'],
+    ['\\cup','∪','Vereinigung'], ['\\cap','∩','Schnitt'], ['\\emptyset','∅','leere Menge'],
   ]},
   { title: 'Zahlenmengen', rows: [
-    ['RR', 'ℝ'], ['NN', 'ℕ'], ['ZZ', 'ℤ'], ['QQ', 'ℚ'], ['CC', 'ℂ'],
+    ['RR','ℝ','Reelle Zahlen'], ['NN','ℕ','Natürliche'], ['ZZ','ℤ','Ganze'],
+    ['QQ','ℚ','Rationale'], ['CC','ℂ','Komplexe'],
   ]},
   { title: 'Vergleich', rows: [
-    ['!=', '≠'], ['<=', '≤'], ['>=', '≥'], ['~=', '≈'], ['===', '≡'],
+    ['!=','≠','ungleich'], ['<=','≤','kleiner gleich'], ['>=','≥','größer gleich'],
+    ['~=','≈','ungefähr'], ['===','≡','identisch'],
   ]},
-  { title: 'Logik', rows: [
-    ['=>', '⇒'], ['<=>', '⟺'], ['->', '→'], ['\\forall', '∀'], ['\\exists', '∃'], ['\\neg', '¬'], ['and', '∧'], ['or', '∨'],
+  { title: 'Logik & Pfeile', rows: [
+    ['=>','⇒','Implikation'], ['<=>','⟺','Äquivalenz'], ['->','→','Abbildung'],
+    ['\\forall','∀','für alle'], ['\\exists','∃','es existiert'], ['\\neg','¬','Negation'],
   ]},
-  { title: 'Hoch / Tief', rows: [
-    ['^2 ^3 ^n', '² ³ ⁿ'], ['^-1', '⁻¹'], ['_1 _2 _n', '₁ ₂ ₙ'],
+  { title: 'Hochgestellt', rows: [
+    ['^2  ^3','² ³','Quadrat/Kubik'], ['^n  ^x','ⁿ ˣ','Buchstaben'], ['^-1',  '⁻¹','Kehrwert'],
+    ['^+  ^-','⁺ ⁻','Vorzeichen'],
+  ]},
+  { title: 'Tiefgestellt', rows: [
+    ['_1  _2','₁ ₂','Zahlen'], ['_n  _i','ₙ ᵢ','Buchstaben'], ['_k  _m','ₖ ₘ','weitere'],
   ]},
   { title: 'Operatoren', rows: [
-    ['\\pm', '±'], ['\\times', '×'], ['\\cdot', '·'], ['\\sqrt', '√'], ['inf', '∞'], ['\\sum', '∑'], ['\\int', '∫'],
+    ['\\pm','±','Plus-Minus'], ['\\times','×','Kreuzprodukt'], ['\\cdot','·','Punkt'],
+    ['\\sqrt','√','Wurzel'], ['inf','∞','Unendlich'], ['\\sum','∑','Summe'],
+    ['\\int','∫','Integral'], ['\\partial','∂','Partiell'],
   ]},
   { title: 'Griechisch', rows: [
-    ['\\alpha', 'α'], ['\\beta', 'β'], ['\\gamma', 'γ'], ['\\delta', 'δ'],
-    ['\\epsilon', 'ε'], ['\\theta', 'θ'], ['\\lambda', 'λ'], ['\\mu', 'μ'],
-    ['\\pi', 'π'], ['\\sigma', 'σ'], ['\\phi', 'φ'], ['\\omega', 'ω'],
-    ['\\Delta', 'Δ'], ['\\Sigma', 'Σ'], ['\\Omega', 'Ω'],
+    ['\\alpha','α',''], ['\\beta','β',''], ['\\gamma / \\Gamma','γ Γ',''],
+    ['\\delta / \\Delta','δ Δ',''], ['\\epsilon','ε',''], ['\\theta','θ',''],
+    ['\\lambda / \\Lambda','λ Λ',''], ['\\mu','μ',''], ['\\pi / \\Pi','π Π',''],
+    ['\\sigma / \\Sigma','σ Σ',''], ['\\phi / \\Phi','φ Φ',''], ['\\omega / \\Omega','ω Ω',''],
   ]},
 ];
 
-const cheat = document.getElementById('cheat');
-function buildCheat() {
-  let html = '';
-  for (const sec of CHEAT_SECTIONS) {
-    html += `<div class="cs-section">${sec.title}</div>`;
-    for (const [k, v] of sec.rows) {
-      html += `<div class="cs-row"><span class="cs-key">${k}</span><span class="cs-val">${v}</span></div>`;
-    }
-  }
-  cheat.innerHTML = html;
+const grid = document.getElementById('cheat-grid');
+CHEAT.forEach(sec => {
+  const div = document.createElement('div');
+  div.className = 'cheat-section';
+  div.innerHTML = `<h3>${sec.title}</h3><div class="cheat-rows"></div>`;
+  const rows = div.querySelector('.cheat-rows');
+  sec.rows.forEach(([k, v, desc]) => {
+    const row = document.createElement('div');
+    row.className = 'cheat-row';
+    row.innerHTML = `
+      <span class="cheat-key">${escHtml(k)}</span>
+      <span class="cheat-val">${v}</span>
+      ${desc ? `<span class="cheat-desc">${escHtml(desc)}</span>` : ''}
+    `;
+    row.querySelector('.cheat-key').addEventListener('click', () => {
+      cmd.value += k.split('/')[0].trim() + ' ';
+      cmd.focus();
+    });
+    rows.appendChild(row);
+  });
+  grid.appendChild(div);
+});
+
+function escHtml(s) {
+  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
 }
 
-function toggleCheat() {
-  cheat.classList.toggle('open');
-  cmd.focus();
-}
-
-buildCheat();
-
-// ─── Boot sequence ────────────────────────────────────────────────────────────
-const bootLines = [
-  ['system', 'math~term v1.0 — Unicode Konverter für GoodNotes'],
-  ['info',   '────────────────────────────────────────'],
-  ['info',   'Eingabe → Enter → Unicode-Text kopieren'],
-  ['info',   '────────────────────────────────────────'],
-  ['info',   'Beispiele:'],
-  ['info',   '  x in RR, x != 0'],
-  ['info',   '  f: RR -> RR, f(x) = x^2 + 1'],
-  ['info',   '  x_1 in \\mathbb{R}, x_1 <= x_2'],
-  ['info',   ''],
-  ['info',   'type  help  für alle Befehle  ·  ?cheat für Kurzreferenz'],
-  ['spacer', ''],
+// ── Boot ──────────────────────────────────────────────────────────────────────
+const boot = [
+  ['system','math~term  ·  Unicode Konverter für GoodNotes'],
+  ['info',  '↵ Enter  ·  ↑↓ Verlauf  ·  Ergebnis anklicken zum Kopieren'],
+  ['spacer'],
+  ['info',  'Beispiel:  x in RR, x != 0   →   x ∈ ℝ, x ≠ 0'],
+  ['spacer'],
 ];
 
-let i = 0;
-function bootNext() {
-  if (i < bootLines.length) {
-    print(bootLines[i][0], bootLines[i][1]);
-    i++;
-    setTimeout(bootNext, 35);
-  }
-}
-bootNext();
+let bi = 0;
+(function bootNext() {
+  if (bi < boot.length) { addLine(boot[bi][0], boot[bi][1] || ''); bi++; setTimeout(bootNext, 40); }
+})();
 </script>
 
 </body>
