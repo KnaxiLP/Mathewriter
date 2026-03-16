@@ -1,3 +1,547 @@
+<!DOCTYPE html>
+
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>math~term</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+–bg: #0a0c0a;
+–green: #39ff6e;
+–green-dim: #1a7a35;
+–green-faint: #0d3a1a;
+–amber: #ffb340;
+–red: #ff4444;
+–text: #c8f0d0;
+–muted: #3a5c42;
+–cursor: #39ff6e;
+}
+
+html, body {
+height: 100%;
+background: var(–bg);
+color: var(–green);
+font-family: ‘JetBrains Mono’, monospace;
+font-size: 14px;
+line-height: 1.5;
+overflow: hidden;
+}
+
+/* scanline overlay */
+body::after {
+content: ‘’;
+position: fixed;
+inset: 0;
+background: repeating-linear-gradient(
+0deg,
+transparent,
+transparent 2px,
+rgba(0,0,0,0.08) 2px,
+rgba(0,0,0,0.08) 4px
+);
+pointer-events: none;
+z-index: 999;
+}
+
+#term {
+display: flex;
+flex-direction: column;
+height: 100vh;
+padding: 0;
+}
+
+/* Header bar */
+#header {
+background: var(–green-faint);
+border-bottom: 1px solid var(–green-dim);
+padding: 6px 16px;
+display: flex;
+align-items: center;
+justify-content: space-between;
+flex-shrink: 0;
+}
+
+#header .title {
+color: var(–green);
+font-weight: 700;
+font-size: 13px;
+letter-spacing: 0.15em;
+}
+
+#header .meta {
+color: var(–muted);
+font-size: 11px;
+}
+
+/* Output scroll area */
+#output {
+flex: 1;
+overflow-y: auto;
+padding: 12px 16px 4px;
+display: flex;
+flex-direction: column;
+gap: 2px;
+}
+
+#output::-webkit-scrollbar { width: 4px; }
+#output::-webkit-scrollbar-track { background: transparent; }
+#output::-webkit-scrollbar-thumb { background: var(–green-dim); border-radius: 2px; }
+
+.line {
+display: flex;
+gap: 0;
+white-space: pre-wrap;
+word-break: break-all;
+animation: appear 0.05s ease;
+}
+
+@keyframes appear { from { opacity: 0; } to { opacity: 1; } }
+
+.line.input-echo .prompt { color: var(–green-dim); }
+.line.input-echo .content { color: var(–text); }
+
+.line.result .prompt { color: var(–amber); user-select: none; }
+.line.result .content {
+color: var(–green);
+font-size: 16px;
+letter-spacing: 0.05em;
+cursor: pointer;
+transition: color 0.1s;
+}
+.line.result .content:hover { color: #fff; }
+.line.result .content.flashed { color: var(–amber); }
+
+.line.info .content { color: var(–muted); font-size: 12px; }
+.line.error .content { color: var(–red); }
+.line.system .content { color: var(–amber); }
+.line.spacer { height: 6px; }
+
+.prompt { min-width: 20px; user-select: none; margin-right: 8px; }
+.content { flex: 1; }
+
+/* copy hint */
+.copy-hint {
+font-size: 11px;
+color: var(–green-dim);
+margin-left: 8px;
+user-select: none;
+transition: color 0.1s;
+}
+
+/* Input row */
+#input-row {
+border-top: 1px solid var(–green-faint);
+padding: 8px 16px;
+display: flex;
+align-items: center;
+gap: 8px;
+flex-shrink: 0;
+background: rgba(0,0,0,0.3);
+}
+
+#input-row .ps1 {
+color: var(–green-dim);
+user-select: none;
+white-space: nowrap;
+}
+
+#cmd {
+flex: 1;
+background: transparent;
+border: none;
+outline: none;
+color: var(–text);
+font-family: ‘JetBrains Mono’, monospace;
+font-size: 14px;
+caret-color: var(–cursor);
+}
+
+/* help table */
+.help-table {
+display: grid;
+grid-template-columns: 140px 1fr;
+gap: 0;
+}
+
+.help-table .k { color: var(–amber); }
+.help-table .v { color: var(–muted); }
+
+/* cheatsheet panel */
+#cheat {
+position: fixed;
+right: 0; top: 0; bottom: 0;
+width: 260px;
+background: rgba(10,12,10,0.97);
+border-left: 1px solid var(–green-faint);
+overflow-y: auto;
+padding: 10px 12px;
+display: none;
+z-index: 100;
+font-size: 12px;
+}
+
+#cheat.open { display: block; }
+#cheat h2 { color: var(–amber); font-size: 11px; letter-spacing: 0.15em; margin-bottom: 8px; text-transform: uppercase; }
+#cheat .cs-row { display: flex; justify-content: space-between; padding: 2px 0; border-bottom: 1px solid var(–green-faint); }
+#cheat .cs-row:last-child { border: none; }
+#cheat .cs-key { color: var(–amber); }
+#cheat .cs-val { color: var(–green); font-size: 14px; }
+#cheat .cs-section { color: var(–muted); font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; margin: 8px 0 4px; }
+</style>
+
+</head>
 <body>
-  <p>Hi</p>
+
+<div id="term">
+  <div id="header">
+    <span class="title">math~term v1.0</span>
+    <span class="meta">unicode converter · type <span style="color:var(--amber)">help</span> · <span style="color:var(--amber); cursor:pointer" onclick="toggleCheat()">?cheat</span></span>
+  </div>
+
+  <div id="output"></div>
+
+  <div id="input-row">
+    <span class="ps1">math&gt;&nbsp;</span>
+    <input id="cmd" type="text" autocomplete="off" autocorrect="off" spellcheck="false" autofocus placeholder="z.B.  x in R, x != 0">
+  </div>
+</div>
+
+<div id="cheat"></div>
+
+<script>
+// ─── Unicode map ─────────────────────────────────────────────────────────────
+const REPLACEMENTS = [
+  // Must be ordered longest-first to avoid partial matches
+
+  // Relations
+  { from: /!=|\\neq/g,          to: '≠' },
+  { from: /<=|\\leq/g,          to: '≤' },
+  { from: />=|\\geq/g,          to: '≥' },
+  { from: /~=|\\approx/g,       to: '≈' },
+  { from: /===|\\equiv/g,       to: '≡' },
+  { from: /<=/g,                to: '≤' },
+  { from: />=/g,                to: '≥' },
+
+  // Sets
+  { from: /\\in\b| in /g,       to: ' ∈ ' },
+  { from: /\\notin\b| notin /g, to: ' ∉ ' },
+  { from: /\\subset/g,          to: ' ⊂ ' },
+  { from: /\\subseteq/g,        to: ' ⊆ ' },
+  { from: /\\cup/g,             to: ' ∪ ' },
+  { from: /\\cap/g,             to: ' ∩ ' },
+  { from: /\\emptyset/g,        to: '∅' },
+
+  // Number sets
+  { from: /\\R\b|RR\b/g,        to: 'ℝ' },
+  { from: /\\N\b|NN\b/g,        to: 'ℕ' },
+  { from: /\\Z\b|ZZ\b/g,        to: 'ℤ' },
+  { from: /\\Q\b|QQ\b/g,        to: 'ℚ' },
+  { from: /\\C\b|CC\b/g,        to: 'ℂ' },
+
+  // Logic
+  { from: /=>|\\Rightarrow/g,   to: ' ⇒ ' },
+  { from: /<=>|\\Leftrightarrow/g, to: ' ⟺ ' },
+  { from: /->|\\to\b/g,         to: ' → ' },
+  { from: /<-/g,                to: ' ← ' },
+  { from: /\\forall/g,          to: '∀' },
+  { from: /\\exists/g,          to: '∃' },
+  { from: /\\neg|\\not\b/g,     to: '¬' },
+  { from: /\\land\b| and /g,    to: ' ∧ ' },
+  { from: /\\lor\b| or /g,      to: ' ∨ ' },
+
+  // Operators
+  { from: /\\pm/g,              to: '±' },
+  { from: /\\times/g,           to: '×' },
+  { from: /\\div/g,             to: '÷' },
+  { from: /\\cdot/g,            to: '·' },
+  { from: /\\infty|inf\b/g,     to: '∞' },
+  { from: /\\sqrt/g,            to: '√' },
+  { from: /\\partial/g,         to: '∂' },
+  { from: /\\nabla/g,           to: '∇' },
+  { from: /\\sum/g,             to: '∑' },
+  { from: /\\prod/g,            to: '∏' },
+  { from: /\\int/g,             to: '∫' },
+
+  // Superscripts (^0-9, ^+, ^-, ^n, ^x)
+  { from: /\^0/g, to: '⁰' },
+  { from: /\^1/g, to: '¹' },
+  { from: /\^2/g, to: '²' },
+  { from: /\^3/g, to: '³' },
+  { from: /\^4/g, to: '⁴' },
+  { from: /\^5/g, to: '⁵' },
+  { from: /\^6/g, to: '⁶' },
+  { from: /\^7/g, to: '⁷' },
+  { from: /\^8/g, to: '⁸' },
+  { from: /\^9/g, to: '⁹' },
+  { from: /\^\+/g, to: '⁺' },
+  { from: /\^-1/g, to: '⁻¹' },
+  { from: /\^-/g, to: '⁻' },
+  { from: /\^n/g, to: 'ⁿ' },
+  { from: /\^i/g, to: 'ⁱ' },
+  { from: /\^a/g, to: 'ᵃ' },
+  { from: /\^b/g, to: 'ᵇ' },
+  { from: /\^x/g, to: 'ˣ' },
+  { from: /\^k/g, to: 'ᵏ' },
+  { from: /\^m/g, to: 'ᵐ' },
+  { from: /\^p/g, to: 'ᵖ' },
+  { from: /\^r/g, to: 'ʳ' },
+  { from: /\^s/g, to: 'ˢ' },
+  { from: /\^t/g, to: 'ᵗ' },
+
+  // Subscripts (_0-9, _n, _i etc.)
+  { from: /_0/g, to: '₀' },
+  { from: /_1/g, to: '₁' },
+  { from: /_2/g, to: '₂' },
+  { from: /_3/g, to: '₃' },
+  { from: /_4/g, to: '₄' },
+  { from: /_5/g, to: '₅' },
+  { from: /_6/g, to: '₆' },
+  { from: /_7/g, to: '₇' },
+  { from: /_8/g, to: '₈' },
+  { from: /_9/g, to: '₉' },
+  { from: /_n/g, to: 'ₙ' },
+  { from: /_i/g, to: 'ᵢ' },
+  { from: /_j/g, to: 'ⱼ' },
+  { from: /_k/g, to: 'ₖ' },
+  { from: /_m/g, to: 'ₘ' },
+  { from: /_x/g, to: 'ₓ' },
+  { from: /_a/g, to: 'ₐ' },
+  { from: /_e/g, to: 'ₑ' },
+  { from: /_o/g, to: 'ₒ' },
+  { from: /_r/g, to: 'ᵣ' },
+  { from: /_s/g, to: 'ₛ' },
+  { from: /_t/g, to: 'ₜ' },
+  { from: /_u/g, to: 'ᵤ' },
+  { from: /_v/g, to: 'ᵥ' },
+
+  // Greek
+  { from: /\\alpha/g,   to: 'α' },
+  { from: /\\beta/g,    to: 'β' },
+  { from: /\\gamma/g,   to: 'γ' },
+  { from: /\\Gamma/g,   to: 'Γ' },
+  { from: /\\delta/g,   to: 'δ' },
+  { from: /\\Delta/g,   to: 'Δ' },
+  { from: /\\epsilon/g, to: 'ε' },
+  { from: /\\zeta/g,    to: 'ζ' },
+  { from: /\\eta/g,     to: 'η' },
+  { from: /\\theta/g,   to: 'θ' },
+  { from: /\\Theta/g,   to: 'Θ' },
+  { from: /\\lambda/g,  to: 'λ' },
+  { from: /\\Lambda/g,  to: 'Λ' },
+  { from: /\\mu/g,      to: 'μ' },
+  { from: /\\nu/g,      to: 'ν' },
+  { from: /\\xi/g,      to: 'ξ' },
+  { from: /\\pi/g,      to: 'π' },
+  { from: /\\Pi/g,      to: 'Π' },
+  { from: /\\rho/g,     to: 'ρ' },
+  { from: /\\sigma/g,   to: 'σ' },
+  { from: /\\Sigma/g,   to: 'Σ' },
+  { from: /\\tau/g,     to: 'τ' },
+  { from: /\\phi/g,     to: 'φ' },
+  { from: /\\Phi/g,     to: 'Φ' },
+  { from: /\\chi/g,     to: 'χ' },
+  { from: /\\psi/g,     to: 'ψ' },
+  { from: /\\Psi/g,     to: 'Ψ' },
+  { from: /\\omega/g,   to: 'ω' },
+  { from: /\\Omega/g,   to: 'Ω' },
+];
+
+function convert(str) {
+  let s = str;
+  for (const r of REPLACEMENTS) {
+    s = s.replace(r.from, r.to);
+  }
+  return s;
+}
+
+// ─── Terminal logic ───────────────────────────────────────────────────────────
+const output = document.getElementById('output');
+const cmd = document.getElementById('cmd');
+let history = [];
+let histIdx = -1;
+
+function print(type, content, extra) {
+  const line = document.createElement('div');
+  line.className = 'line ' + type;
+  const prompt = document.createElement('span');
+  prompt.className = 'prompt';
+  const content_el = document.createElement('span');
+  content_el.className = 'content';
+
+  if (type === 'input-echo') { prompt.textContent = '›'; content_el.textContent = content; }
+  else if (type === 'result') {
+    prompt.textContent = '=';
+    content_el.textContent = content;
+    const hint = document.createElement('span');
+    hint.className = 'copy-hint';
+    hint.textContent = '[klick → kopiert]';
+    content_el.addEventListener('click', () => {
+      navigator.clipboard.writeText(content).then(() => {
+        content_el.classList.add('flashed');
+        hint.textContent = '[✓ kopiert!]';
+        setTimeout(() => { content_el.classList.remove('flashed'); hint.textContent = '[klick → kopiert]'; }, 1200);
+      });
+    });
+    line.appendChild(prompt);
+    line.appendChild(content_el);
+    line.appendChild(hint);
+    output.appendChild(line);
+    output.scrollTop = output.scrollHeight;
+    return;
+  }
+  else if (type === 'info') { prompt.textContent = ' '; content_el.textContent = content; }
+  else if (type === 'error') { prompt.textContent = '!'; content_el.textContent = content; }
+  else if (type === 'system') { prompt.textContent = '#'; content_el.textContent = content; }
+  else if (type === 'spacer') { output.appendChild(line); output.scrollTop = output.scrollHeight; return; }
+
+  line.appendChild(prompt);
+  line.appendChild(content_el);
+  output.appendChild(line);
+  output.scrollTop = output.scrollHeight;
+}
+
+function printHelp() {
+  print('system', 'math~term — Befehle');
+  print('spacer');
+  const rows = [
+    ['help', 'diese Hilfe'],
+    ['clear', 'Terminal leeren'],
+    ['?cheat', 'Kurzreferenz ein/ausblenden'],
+    ['[eingabe]', 'Text → Unicode konvertieren'],
+  ];
+  for (const [k, v] of rows) {
+    const line = document.createElement('div');
+    line.className = 'line info';
+    line.innerHTML = `<span class="prompt"> </span><span class="content"><span style="color:var(--amber);display:inline-block;width:100px">${k}</span><span style="color:var(--muted)">${v}</span></span>`;
+    output.appendChild(line);
+  }
+  print('spacer');
+  print('info', 'Syntax-Kurzreferenz:');
+  print('info', '  !=  ≠   <=  ≤   >=  ≥   in  ∈   notin  ∉');
+  print('info', '  RR  ℝ   NN  ℕ   ZZ  ℤ   QQ  ℚ   CC  ℂ');
+  print('info', '  ^2  ²   ^n  ⁿ   _1  ₁   _n  ₙ');
+  print('info', '  =>  ⇒   <=> ⟺   ->  →   inf ∞');
+  print('info', '  \\alpha α  \\beta β  \\pi π  \\sqrt √  ...');
+  print('spacer');
+  output.scrollTop = output.scrollHeight;
+}
+
+function execute(raw) {
+  const trimmed = raw.trim();
+  if (!trimmed) return;
+
+  history.unshift(trimmed);
+  histIdx = -1;
+
+  print('input-echo', trimmed);
+
+  if (trimmed === 'clear') {
+    output.innerHTML = '';
+    return;
+  }
+  if (trimmed === 'help') {
+    printHelp();
+    return;
+  }
+
+  const result = convert(trimmed);
+  print('result', result);
+  print('spacer');
+}
+
+cmd.addEventListener('keydown', e => {
+  if (e.key === 'Enter') {
+    execute(cmd.value);
+    cmd.value = '';
+  } else if (e.key === 'ArrowUp') {
+    e.preventDefault();
+    if (histIdx < history.length - 1) { histIdx++; cmd.value = history[histIdx]; }
+  } else if (e.key === 'ArrowDown') {
+    e.preventDefault();
+    if (histIdx > 0) { histIdx--; cmd.value = history[histIdx]; }
+    else { histIdx = -1; cmd.value = ''; }
+  }
+});
+
+// keep focus
+document.addEventListener('click', () => cmd.focus());
+
+// ─── Cheatsheet ───────────────────────────────────────────────────────────────
+const CHEAT_SECTIONS = [
+  { title: 'Mengen', rows: [
+    ['in / \\in', '∈'], ['notin / \\notin', '∉'], ['\\subset', '⊂'], ['\\cup', '∪'], ['\\cap', '∩'], ['\\emptyset', '∅'],
+  ]},
+  { title: 'Zahlenmengen', rows: [
+    ['RR', 'ℝ'], ['NN', 'ℕ'], ['ZZ', 'ℤ'], ['QQ', 'ℚ'], ['CC', 'ℂ'],
+  ]},
+  { title: 'Vergleich', rows: [
+    ['!=', '≠'], ['<=', '≤'], ['>=', '≥'], ['~=', '≈'], ['===', '≡'],
+  ]},
+  { title: 'Logik', rows: [
+    ['=>', '⇒'], ['<=>', '⟺'], ['->', '→'], ['\\forall', '∀'], ['\\exists', '∃'], ['\\neg', '¬'], ['and', '∧'], ['or', '∨'],
+  ]},
+  { title: 'Hoch / Tief', rows: [
+    ['^2 ^3 ^n', '² ³ ⁿ'], ['^-1', '⁻¹'], ['_1 _2 _n', '₁ ₂ ₙ'],
+  ]},
+  { title: 'Operatoren', rows: [
+    ['\\pm', '±'], ['\\times', '×'], ['\\cdot', '·'], ['\\sqrt', '√'], ['inf', '∞'], ['\\sum', '∑'], ['\\int', '∫'],
+  ]},
+  { title: 'Griechisch', rows: [
+    ['\\alpha', 'α'], ['\\beta', 'β'], ['\\gamma', 'γ'], ['\\delta', 'δ'],
+    ['\\epsilon', 'ε'], ['\\theta', 'θ'], ['\\lambda', 'λ'], ['\\mu', 'μ'],
+    ['\\pi', 'π'], ['\\sigma', 'σ'], ['\\phi', 'φ'], ['\\omega', 'ω'],
+    ['\\Delta', 'Δ'], ['\\Sigma', 'Σ'], ['\\Omega', 'Ω'],
+  ]},
+];
+
+const cheat = document.getElementById('cheat');
+function buildCheat() {
+  let html = '';
+  for (const sec of CHEAT_SECTIONS) {
+    html += `<div class="cs-section">${sec.title}</div>`;
+    for (const [k, v] of sec.rows) {
+      html += `<div class="cs-row"><span class="cs-key">${k}</span><span class="cs-val">${v}</span></div>`;
+    }
+  }
+  cheat.innerHTML = html;
+}
+
+function toggleCheat() {
+  cheat.classList.toggle('open');
+  cmd.focus();
+}
+
+buildCheat();
+
+// ─── Boot sequence ────────────────────────────────────────────────────────────
+const bootLines = [
+  ['system', 'math~term v1.0 — Unicode Konverter für GoodNotes'],
+  ['info',   '────────────────────────────────────────'],
+  ['info',   'Eingabe → Enter → Unicode-Text kopieren'],
+  ['info',   '────────────────────────────────────────'],
+  ['info',   'Beispiele:'],
+  ['info',   '  x in RR, x != 0'],
+  ['info',   '  f: RR -> RR, f(x) = x^2 + 1'],
+  ['info',   '  x_1 in \\mathbb{R}, x_1 <= x_2'],
+  ['info',   ''],
+  ['info',   'type  help  für alle Befehle  ·  ?cheat für Kurzreferenz'],
+  ['spacer', ''],
+];
+
+let i = 0;
+function bootNext() {
+  if (i < bootLines.length) {
+    print(bootLines[i][0], bootLines[i][1]);
+    i++;
+    setTimeout(bootNext, 35);
+  }
+}
+bootNext();
+</script>
+
 </body>
+</html>
